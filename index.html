@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventoxia Beats - Professional Browser DAW</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/midi.js/r114/midi.min.js"></script>
+</head>
+<body>
+    <div class="daw-container">
+        <!-- Top Menu Bar -->
+        <header class="header">
+            <div class="logo">🎵 Ventoxia Beats</div>
+            <div class="menu-controls">
+                <button id="newBtn" class="btn-primary">⊕ New</button>
+                <button id="openBtn" class="btn-primary">📂 Open</button>
+                <button id="saveBtn" class="btn-primary">💾 Save</button>
+                <button id="exportBtn" class="btn-primary">📤 Export</button>
+            </div>
+            <div class="transport-controls">
+                <button id="playBtn" class="transport-btn">▶ Play</button>
+                <button id="pauseBtn" class="transport-btn">⏸ Pause</button>
+                <button id="stopBtn" class="transport-btn">⏹ Stop</button>
+                <span class="time-display">00:00:00</span>
+                <span class="bpm-display">BPM: 120</span>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Panel: Channel Rack -->
+            <aside class="left-panel channel-rack-container">
+                <h3 class="panel-header">📻 Channel Rack</h3>
+                <div class="channel-rack-toolbar">
+                    <button id="addChannelBtn" class="btn-small">+ Add Channel</button>
+                    <button id="importAudioBtn" class="btn-small">📥 Import Audio</button>
+                    <button id="importMidiBtn" class="btn-small">🎹 Import MIDI</button>
+                </div>
+                <div id="channelRack" class="channel-rack">
+                    <!-- Channels will be added here dynamically -->
+                </div>
+            </aside>
+
+            <!-- Center Panel: Piano Roll & Playlist -->
+            <main class="center-panel">
+                <!-- Tabs for Playlist/Piano Roll -->
+                <div class="tab-container">
+                    <button class="tab-btn active" data-tab="playlist">Playlist</button>
+                    <button class="tab-btn" data-tab="piano-roll">Piano Roll</button>
+                </div>
+
+                <!-- Playlist View -->
+                <div id="playlist" class="tab-content active">
+                    <div class="playlist-header">
+                        <div class="playlist-timeline">
+                            <canvas id="playlistTimelineCanvas" class="timeline-canvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="playlist-tracks">
+                        <canvas id="playlistCanvas" class="playlist-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Piano Roll View -->
+                <div id="piano-roll" class="tab-content">
+                    <div class="piano-roll-container">
+                        <div class="piano-keyboard">
+                            <canvas id="pianoKeyboardCanvas" class="piano-keyboard-canvas"></canvas>
+                        </div>
+                        <div class="piano-roll-editor">
+                            <div class="piano-roll-header">
+                                <canvas id="pianoRollTimelineCanvas" class="timeline-canvas"></canvas>
+                            </div>
+                            <div class="piano-roll-grid">
+                                <canvas id="pianoRollCanvas" class="piano-roll-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Panel: Mixer & Effects -->
+            <aside class="right-panel mixer-container">
+                <h3 class="panel-header">🎚️ Mixer</h3>
+                <div class="mixer-master">
+                    <div class="mixer-channel master">
+                        <div class="channel-name">Master</div>
+                        <div class="channel-meter">
+                            <canvas id="masterMeterCanvas" class="meter-canvas"></canvas>
+                        </div>
+                        <div class="channel-controls">
+                            <input type="range" min="-60" max="0" value="-6" class="fader" id="masterVolume">
+                            <span class="fader-label">Vol</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="mixerChannels" class="mixer-channels">
+                    <!-- Mixer channels will be added here -->
+                </div>
+            </aside>
+        </div>
+
+        <!-- Bottom Panel: Metering & Tools -->
+        <div class="bottom-panel">
+            <div class="tabs-bottom">
+                <button class="tab-btn-bottom active" data-tab="metering">Metering</button>
+                <button class="tab-btn-bottom" data-tab="patcher">Patcher</button>
+                <button class="tab-btn-bottom" data-tab="effects">Effects</button>
+                <button class="tab-btn-bottom" data-tab="settings">Settings</button>
+            </div>
+
+            <!-- Metering Tab -->
+            <div id="metering" class="tab-content-bottom active">
+                <div class="metering-container">
+                    <div class="meter-section">
+                        <h4>Spectrum Analyzer</h4>
+                        <canvas id="spectrumCanvas" class="spectrum-canvas"></canvas>
+                    </div>
+                    <div class="meter-section">
+                        <h4>Waveform Display</h4>
+                        <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+                    </div>
+                    <div class="meter-section">
+                        <h4>Level Meters</h4>
+                        <div class="level-meters">
+                            <div class="level-meter-item">
+                                <span>Left</span>
+                                <canvas id="levelMeterLeft" class="level-meter-canvas"></canvas>
+                            </div>
+                            <div class="level-meter-item">
+                                <span>Right</span>
+                                <canvas id="levelMeterRight" class="level-meter-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patcher Tab -->
+            <div id="patcher" class="tab-content-bottom">
+                <div class="patcher-container">
+                    <h4>Signal Routing & Modulation</h4>
+                    <canvas id="patcherCanvas" class="patcher-canvas"></canvas>
+                    <div class="patcher-controls">
+                        <button id="addNodeBtn" class="btn-small">+ Add Node</button>
+                        <button id="connectNodesBtn" class="btn-small">Connect</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Effects Tab -->
+            <div id="effects" class="tab-content-bottom">
+                <div class="effects-container">
+                    <div class="effects-list">
+                        <h4>Available Effects</h4>
+                        <button class="effect-btn" data-effect="reverb">Reverb</button>
+                        <button class="effect-btn" data-effect="delay">Delay</button>
+                        <button class="effect-btn" data-effect="distortion">Distortion</button>
+                        <button class="effect-btn" data-effect="compressor">Compressor</button>
+                        <button class="effect-btn" data-effect="eq">3-Band EQ</button>
+                        <button class="effect-btn" data-effect="flanger">Flanger</button>
+                        <button class="effect-btn" data-effect="phaser">Phaser</button>
+                        <button class="effect-btn" data-effect="chorus">Chorus</button>
+                    </div>
+                    <div id="effectsPanel" class="effects-panel">
+                        <!-- Effect controls will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content-bottom">
+                <div class="settings-container">
+                    <div class="setting-group">
+                        <label>BPM</label>
+                        <input type="number" id="bpmInput" value="120" min="40" max="300">
+                    </div>
+                    <div class="setting-group">
+                        <label>Time Signature</label>
+                        <select id="timeSignature">
+                            <option>4/4</option>
+                            <option>3/4</option>
+                            <option>6/8</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Audio Output Device</label>
+                        <select id="audioDevice"></select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Sample Rate</label>
+                        <select id="sampleRate">
+                            <option>44100</option>
+                            <option>48000</option>
+                            <option>96000</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label>Master Volume</label>
+                        <input type="range" id="masterVolumeSlider" min="0" max="100" value="80">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Input (Hidden) -->
+    <input type="file" id="audioFileInput" accept=".wav,.mp3,.flac,.aac,.ogg,.m4a,.wma,.aiff,.ape,.alac,.opus,.dsd,.dsf,.dff,.tak,.wv,.spx,.caf,.alac,.ape,.au,.iff,.pvf,.raw,.sf,.snd,.voc,.vorbis" style="display:none;">
+    <input type="file" id="midiFileInput" accept=".mid,.midi" style="display:none;">
+
+    <!-- Modal for file uploads -->
+    <div id="uploadModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Upload Audio/MIDI File</h3>
+            <progress id="uploadProgress" max="100"></progress>
+            <p id="uploadStatus">Ready to upload...</p>
+            <button id="closeModalBtn" class="btn-small">Close</button>
+        </div>
+    </div>
+
+    <script src="audioEngine.js"></script>
+    <script src="pianoRoll.js"></script>
+    <script src="playlist.js"></script>
+    <script src="mixer.js"></script>
+    <script src="channelRack.js"></script>
+    <script src="metering.js"></script>
+    <script src="patcher.js"></script>
+    <script src="effects.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
