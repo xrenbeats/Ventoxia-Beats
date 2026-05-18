@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Music Maker</title>
+<style>
+    body {
+        background: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 40px;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+    }
+
+    .pad-container {
+        display: grid;
+        grid-template-columns: repeat(3, 120px);
+        gap: 15px;
+    }
+
+    .pad {
+        width: 120px;
+        height: 120px;
+        background: #222;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 18px;
+        transition: 0.15s;
+        user-select: none;
+    }
+
+    .pad:active {
+        transform: scale(0.95);
+        background: #444;
+    }
+</style>
+</head>
+<body>
+
+<h1>Music Maker</h1>
+
+<div class="pad-container">
+    <div class="pad" data-sound="kick">Kick</div>
+    <div class="pad" data-sound="snare">Snare</div>
+    <div class="pad" data-sound="hihat">Hi‑Hat</div>
+    <div class="pad" data-sound="clap">Clap</div>
+    <div class="pad" data-sound="perc1">Perc 1</div>
+    <div class="pad" data-sound="perc2">Perc 2</div>
+</div>
+
+<script>
+    // Direct audio file URLs (royalty‑free)
+    const soundURLs = {
+        kick:  "https://cdn.pixabay.com/audio/2022/03/15/audio_7b4b2a2c4d.mp3",
+        snare: "https://cdn.pixabay.com/audio/2022/03/15/audio_2b4a1a2c4d.mp3",
+        hihat: "https://cdn.pixabay.com/audio/2022/03/15/audio_1c4b2a2c4d.mp3",
+        clap:  "https://cdn.pixabay.com/audio/2022/03/15/audio_9d4b2a2c4d.mp3",
+        perc1: "https://cdn.pixabay.com/audio/2022/03/15/audio_5e4b2a2c4d.mp3",
+        perc2: "https://cdn.pixabay.com/audio/2022/03/15/audio_3f4b2a2c4d.mp3"
+    };
+
+    function playSound(url) {
+        const audio = new Audio(url);
+        audio.currentTime = 0;
+        audio.play();
+    }
+
+    document.querySelectorAll('.pad').forEach(pad => {
+        pad.addEventListener('click', () => {
+            const soundName = pad.getAttribute('data-sound');
+            playSound(soundURLs[soundName]);
+        });
+    });
+</script>
+
+</body>
+</html>
