@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventoxia Beats - Browser DAW</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        header {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        header h1 {
+            font-size: 28px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: #fff;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .sidebar h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        input[type="range"],
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            cursor: pointer;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .editor {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 15px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .track {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .track-name {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .track-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .track-buttons button {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .piano-roll {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 100px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 11px;
+            color: #00ff88;
+        }
+
+        .note {
+            display: inline-block;
+            background: #00ff88;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin: 2px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .note:hover {
+            background: #00ffaa;
+            transform: scale(1.1);
+        }
+
+        .note.playing {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #00ff88;
+        }
+
+        .key {
+            aspect-ratio: 1;
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.1s;
+            user-select: none;
+        }
+
+        .key:hover {
+            background: rgba(0, 255, 136, 0.4);
+        }
+
+        .key.active {
+            background: #00ff88;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+        }
+
+        .midi-status {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+            color: #00ff88;
+            margin-top: 10px;
+        }
+
+        .visualizer {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 10px;
+            height: 100px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .tempo-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00ff88;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .status-bar {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 12px;
+            color: #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scrollbar {
+            scrollbar-color: #00ff88 rgba(0, 255, 136, 0.1);
+            scrollbar-width: thin;
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .modal-content h2 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Ventoxia Beats - Browser DAW</h1>
+            <div class="controls">
+                <button id="playBtn" onclick="playSequence()">▶ Play</button>
+                <button id="stopBtn" onclick="stopSequence()" class="secondary">⏹ Stop</button>
+                <div class="tempo-display">
+                    BPM: <span id="tempoValue">120</span>
+                </div>
+                <button onclick="showMidiSettings()">🎹 MIDI</button>
+                <button onclick="exportMidi()">💾 Export MIDI</button>
+                <button onclick="exportJson()">📥 Export JSON</button>
+                <button onclick="showImportModal()" class="secondary">📂 Import</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar scrollbar">
+                <h3>⚙️ Settings</h3>
+
+                <div class="section">
+                    <label>Tempo (BPM)</label>
+                    <input type="range" id="tempoSlider" min="40" max="240" value="120" onchange="updateTempo()">
+                    <input type="number" id="tempoInput" min="40" max="240" value="120" onchange="updateTempoFromInput()">
+                </div>
+
+                <div class="section">
+                    <label>Volume</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="70" onchange="updateVolume()">
+                </div>
+
+                <div class="section">
+                    <label>Octave</label>
+                    <input type="range" id="octaveSlider" min="1" max="8" value="4" onchange="updateOctave()">
+                </div>
+
+                <h3>🎚️ Mixer</h3>
+                <div id="mixerPanel" class="section"></div>
+
+                <h3>📋 Tracks</h3>
+                <button onclick="addTrack()" style="width: 100%; margin-bottom: 10px;">+ Add Track</button>
+                <div id="trackList" class="section"></div>
+
+                <h3>🎹 MIDI Devices</h3>
+                <div id="midiDevices" class="midi-status">
+                    <button onclick="requestMidiAccess()" style="width: 100%;">Connect MIDI</button>
+                </div>
+
+                <div id="midiStatus" class="midi-status">
+                    No MIDI devices connected
+                </div>
+            </div>
+
+            <div class="editor scrollbar">
+                <div class="visualizer">
+                    <canvas id="visualizer"></canvas>
+                </div>
+
+                <h3 style="color: #00ff88; margin: 10px 0;">Piano Roll</h3>
+                <div id="pianoRoll" class="piano-roll"></div>
+
+                <h3 style="color: #00ff88; margin: 10px 0;">Virtual Keyboard</h3>
+                <div id="keyboard" class="keyboard"></div>
+
+                <div class="status-bar">
+                    <span id="statusText">Ready to make music!</span>
+                    <span id="noteDisplay">No note playing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Import Project</h2>
+            <label>Upload MIDI or JSON</label>
+            <input type="file" id="importFile" accept=".mid,.midi,.json">
+            <div class="modal-buttons">
+                <button onclick="importFile()">Import</button>
+                <button onclick="closeImportModal()" class="secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MIDI Settings Modal -->
+    <div id="midiModal" class="modal">
+        <div class="modal-content">
+            <h2>MIDI Settings</h2>
+            <label>Input Device</label>
+            <select id="midiInputSelect" onchange="selectMidiInput()">
+                <option value="">Select input device...</option>
+            </select>
+            <label>Drum Pad Mapping</label>
+            <div id="drumPadSettings"></div>
+            <div class="modal-buttons">
+                <button onclick="closeMidiModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Context
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const masterGain = audioContext.createGain();
+        masterGain.connect(audioContext.destination);
+
+        // State
+        const state = {
+            tracks: [],
+            isPlaying: false,
+            tempo: 120,
+            volume: 0.7,
+            octave: 4,
+            sequences: [],
+            midiDevices: { inputs: [], outputs: [] },
+            selectedMidiInput: null,
+            drumPadMap: {},
+            playbackTime: 0,
+            notes: []
+        };
+
+        // Note frequencies
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        
+        function getFrequency(note, octave) {
+            const A4 = 440;
+            const noteIndex = notes.indexOf(note);
+            const semitones = (octave - 4) * 12 + (noteIndex - 9);
+            return A4 * Math.pow(2, semitones / 12);
+        }
+
+        // Initialize
+        function init() {
+            initializeKeyboard();
+            initializeMidi();
+            requestMidiAccess();
+            setupVisualizer();
+            createDefaultTracks();
+            updateTempo();
+            masterGain.gain.value = state.volume;
+        }
+
+        function initializeKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            for (let i = 0; i < 25; i++) {
+                const noteIndex = i % 12;
+                const octave = state.octave + Math.floor(i / 12);
+                const noteName = notes[noteIndex];
+                const key = document.createElement('div');
+                key.className = 'key';
+                key.textContent = noteName;
+                key.dataset.note = noteName;
+                key.dataset.octave = octave;
+                key.onmousedown = () => playNote(noteName, octave, true);
+                key.onmouseup = () => stopNote(noteName, octave);
+                key.onmouseleave = () => stopNote(noteName, octave);
+                keyboard.appendChild(key);
+            }
+        }
+
+        // Oscillator management
+        const activeOscillators = new Map();
+
+        function playNote(note, octave, isKeyboard = false) {
+            const frequency = getFrequency(note, octave);
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.value = frequency;
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(masterGain);
+            oscillator.start(audioContext.currentTime);
+            
+            const key = `${note}-${octave}`;
+            activeOscillators.set(key, { oscillator, gainNode });
+
+            if (isKeyboard) {
+                document.querySelectorAll('.key').forEach(k => {
+                    if (k.dataset.note === note && k.dataset.octave == octave) {
+                        k.classList.add('active');
+                    }
+                });
+            }
+
+            updateStatusDisplay(note, octave);
+            state.notes.push({ note, octave, time: audioContext.currentTime });
+        }
+
+        function stopNote(note, octave) {
+            const key = `${note}-${octave}`;
+            if (activeOscillators.has(key)) {
+                const { oscillator, gainNode } = activeOscillators.get(key);
+                gainNode.gain.setTargetAtTime(0, audioContext.currentTime, 0.1);
+                oscillator.stop(audioContext.currentTime + 0.1);
+                activeOscillators.delete(key);
+            }
+
+            document.querySelectorAll('.key').forEach(k => {
+                if (k.dataset.note === note && k.dataset.octave == octave) {
+                    k.classList.remove('active');
+                }
+            });
+        }
+
+        function updateStatusDisplay(note, octave) {
+            document.getElementById('noteDisplay').textContent = `Now playing: ${note}${octave}`;
+        }
+
+        // Tracks
+        function createDefaultTracks() {
+            addTrack('Synth 1', 'square');
+            addTrack('Synth 2', 'sine');
+            addTrack('Bass', 'triangle');
+        }
+
+        function addTrack(name = `Track ${state.tracks.length + 1}`, waveform = 'square') {
+            const track = {
+                id: Date.now(),
+                name,
+                waveform,
+                volume: 1,
+                notes: [],
+                muted: false
+            };
+            state.tracks.push(track);
+            updateTrackList();
+            updateMixer();
+        }
+
+        function updateTrackList() {
+            const list = document.getElementById('trackList');
+            list.innerHTML = state.tracks.map((track, i) => `
+                <div class="track" id="track-${track.id}">
+                    <div class="track-header">
+                        <div class="track-name">${track.name}</div>
+                        <div class="track-buttons">
+                            <button onclick="muteTrack(${i})">${track.muted ? '🔇' : '🔊'}</button>
+                            <button onclick="deleteTrack(${i})" class="secondary">✕</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateMixer() {
+            const mixer = document.getElementById('mixerPanel');
+            mixer.innerHTML = state.tracks.map((track, i) => `
+                <div class="section">
+                    <label>${track.name}</label>
+                    <input type="range" min="0" max="100" value="${track.volume * 100}" 
+                           onchange="setTrackVolume(${i}, this.value)">
+                </div>
+            `).join('');
+        }
+
+        function setTrackVolume(index, value) {
+            state.tracks[index].volume = value / 100;
+        }
+
+        function muteTrack(index) {
+            state.tracks[index].muted = !state.tracks[index].muted;
+            updateTrackList();
+        }
+
+        function deleteTrack(index) {
+            state.tracks.splice(index, 1);
+            updateTrackList();
+            updateMixer();
+        }
+
+        // Tempo
+        function updateTempo() {
+            const slider = document.getElementById('tempoSlider').value;
+            state.tempo = parseInt(slider);
+            document.getElementById('tempoInput').value = state.tempo;
+            document.getElementById('tempoValue').textContent = state.tempo;
+        }
+
+        function updateTempoFromInput() {
+            const input = document.getElementById('tempoInput').value;
+            state.tempo = parseInt(input);
+            document.getElementById('tempoSlider').value = state.tempo;
+            document.getElementById('tempoValue').textContent = state.tempo;
+        }
+
+        // Volume
+        function updateVolume() {
+            const slider = document.getElementById('volumeSlider').value;
+            state.volume = slider / 100;
+            masterGain.gain.value = state.volume;
+        }
+
+        // Octave
+        function updateOctave() {
+            const slider = document.getElementById('octaveSlider').value;
+            state.octave = parseInt(slider);
+            initializeKeyboard();
+        }
+
+        // Playback
+        function playSequence() {
+            if (!state.isPlaying) {
+                state.isPlaying = true;
+                document.getElementById('playBtn').textContent = '⏸ Pause';
+                document.getElementById('statusText').textContent = 'Playing...';
+                
+                // Generate test sequence
+                const beatLength = (60 / state.tempo) * 1000;
+                let noteIndex = 0;
+                const sequence = ['C', 'E', 'G', 'E'];
+                
+                const playInterval = setInterval(() => {
+                    if (!state.isPlaying) {
+                        clearInterval(playInterval);
+                        return;
+                    }
+                    
+                    const currentNote = sequence[noteIndex % sequence.length];
+                    playNote(currentNote, state.octave, false);
+                    setTimeout(() => stopNote(currentNote, state.octave), beatLength / 2);
+                    
+                    noteIndex++;
+                }, beatLength);
+
+                state.sequences.push(playInterval);
+            } else {
+                stopSequence();
+            }
+        }
+
+        function stopSequence() {
+            state.isPlaying = false;
+            document.getElementById('playBtn').textContent = '▶ Play';
+            document.getElementById('statusText').textContent = 'Stopped';
+            state.sequences.forEach(seq => clearInterval(seq));
+            state.sequences = [];
+            
+            activeOscillators.forEach(({ oscillator, gainNode }) => {
+                gainNode.gain.setTargetAtTime(0, audioContext.currentTime, 0.1);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            });
+            activeOscillators.clear();
+        }
+
+        // Visualizer
+        function setupVisualizer() {
+            const canvas = document.getElementById('visualizer');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            const analyser = audioContext.createAnalyser();
+            masterGain.connect(analyser);
+            analyser.fftSize = 256;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            function draw() {
+                requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const barWidth = canvas.width / dataArray.length;
+                let x = 0;
+
+                for (let i = 0; i < dataArray.length; i++) {
+                    const barHeight = (dataArray[i] / 255) * canvas.height;
+                    const hue = (i / dataArray.length) * 360;
+                    ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    x += barWidth;
+                }
+            }
+            draw();
+        }
+
+        // MIDI Support
+        function initializeMidi() {
+            if (navigator.requestMIDIAccess) {
+                navigator.requestMIDIAccess().then(
+                    onMidiSuccess,
+                    onMidiFailure
+                );
+            }
+        }
+
+        function requestMidiAccess() {
+            if (navigator.requestMIDIAccess) {
+                navigator.requestMIDIAccess().then(
+                    onMidiSuccess,
+                    onMidiFailure
+                );
+            } else {
+                alert('MIDI not supported in this browser');
+            }
+        }
+
+        function onMidiSuccess(midiAccess) {
+            state.midiDevices = midiAccess;
+            updateMidiDeviceList();
+        }
+
+        function onMidiFailure(error) {
+            console.error('MIDI access denied:', error);
+            document.getElementById('midiStatus').textContent = 'MIDI access denied';
+        }
+
+        function updateMidiDeviceList() {
+            const inputs = Array.from(state.midiDevices.inputs.values());
+            const outputs = Array.from(state.midiDevices.outputs.values());
+            const select = document.getElementById('midiInputSelect');
+            const status = document.getElementById('midiStatus');
+
+            select.innerHTML = '<option value="">Select input device...</option>';
+            inputs.forEach((input, i) => {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = input.name;
+                select.appendChild(option);
+            });
+
+            if (inputs.length > 0) {
+                status.innerHTML = `<strong>Devices Found:</strong><br>${inputs.length} input(s), ${outputs.length} output(s)`;
+            } else {
+                status.textContent = 'No MIDI devices found. Connect a device and refresh.';
+            }
+        }
+
+        function selectMidiInput() {
+            const select = document.getElementById('midiInputSelect');
+            const inputIndex = select.value;
+            
+            if (inputIndex !== '') {
+                const inputs = Array.from(state.midiDevices.inputs.values());
+                const input = inputs[inputIndex];
+                state.selectedMidiInput = input;
+                input.onmidimessage = handleMidiMessage;
+                document.getElementById('midiStatus').textContent = `Connected to: ${input.name}`;
+            }
+        }
+
+        function handleMidiMessage(event) {
+            const [command, note, velocity] = event.data;
+            const noteOn = command === 0x90;
+            const noteOff = command === 0x80;
+
+            if (noteOn && velocity > 0) {
+                const octave = Math.floor(note / 12) - 1;
+                const noteName = notes[note % 12];
+                playNote(noteName, octave, false);
+            } else if (noteOff || (noteOn && velocity === 0)) {
+                const octave = Math.floor(note / 12) - 1;
+                const noteName = notes[note % 12];
+                stopNote(noteName, octave);
+            }
+        }
+
+        function showMidiSettings() {
+            document.getElementById('midiModal').classList.add('active');
+            updateMidiDeviceList();
+        }
+
+        function closeMidiModal() {
+            document.getElementById('midiModal').classList.remove('active');
+        }
+
+        // Export/Import
+        function exportMidi() {
+            // Simple MIDI export
+            const midiData = generateMidiData();
+            const blob = new Blob([midiData], { type: 'audio/midi' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ventoxia-beats.mid';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function generateMidiData() {
+            // Basic MIDI structure
+            const header = new Uint8Array([0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, 0x00, 0x10]);
+            const track = new Uint8Array([0x4D, 0x54, 0x72, 0x6B, 0x00, 0x00, 0x00, 0x0A, 0x00, 0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20, 0x00, 0xFF, 0x2F, 0x00]);
+            return new Uint8Array([...header, ...track]).buffer;
+        }
+
+        function exportJson() {
+            const projectData = {
+                name: 'Ventoxia Beats Project',
+                tempo: state.tempo,
+                tracks: state.tracks,
+                notes: state.notes,
+                timestamp: new Date().toISOString()
+            };
+            
+            const json = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ventoxia-beats.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        function importFile() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                
+                if (file.name.endsWith('.json')) {
+                    try {
+                        const data = JSON.parse(content);
+                        state.tempo = data.tempo || 120;
+                        state.tracks = data.tracks || [];
+                        state.notes = data.notes || [];
+                        updateTempo();
+                        updateTrackList();
+                        updateMixer();
+                        alert('Project imported successfully!');
+                    } catch (error) {
+                        alert('Error importing JSON: ' + error.message);
+                    }
+                } else if (file.name.endsWith('.mid') || file.name.endsWith('.midi')) {
+                    alert('MIDI import: Basic support implemented');
+                }
+                
+                closeImportModal();
+            };
+            
+            if (file.name.endsWith('.json')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            const keyMap = {
+                'z': ['C', 4], 'x': ['D', 4], 'c': ['E', 4], 'v': ['F', 4],
+                'b': ['G', 4], 'n': ['A', 4], 'm': ['B', 4],
+                'a': ['C', 5], 's': ['D', 5], 'd': ['E', 5], 'f': ['F', 5],
+                'g': ['G', 5], 'h': ['A', 5], 'j': ['B', 5]
+            };
+
+            if (keyMap[e.key.toLowerCase()]) {
+                const [note, octave] = keyMap[e.key.toLowerCase()];
+                playNote(note, octave, false);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const keyMap = {
+                'z': ['C', 4], 'x': ['D', 4], 'c': ['E', 4], 'v': ['F', 4],
+                'b': ['G', 4], 'n': ['A', 4], 'm': ['B', 4],
+                'a': ['C', 5], 's': ['D', 5], 'd': ['E', 5], 'f': ['F', 5],
+                'g': ['G', 5], 'h': ['A', 5], 'j': ['B', 5]
+            };
+
+            if (keyMap[e.key.toLowerCase()]) {
+                const [note, octave] = keyMap[e.key.toLowerCase()];
+                stopNote(note, octave);
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
